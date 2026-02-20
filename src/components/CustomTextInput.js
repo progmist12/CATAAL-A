@@ -1,18 +1,29 @@
-import { Text, TextInput, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { TextInput } from 'react-native-gesture-handler';
 
-export default function CustomTextInput({label,placeholder,onChangeText,textStyle,TextInputStyle}) {
+const CustomTextInput = ({
+  label,
+  placeholder,
+  value,
+  textStyle,
+  containerStyle,
+}) => {
   return (
-    <View>
-      <Text
-        style={textStyle}
-      >{label}</Text>
+    <View style={containerStyle}>
+      <Text style={{ fontWeight: 'bold' }}>{label}</Text>
       <TextInput
         placeholder={placeholder}
-        placeholderTextColor={"gray"}
-        onChangeText={e => onChangeText(e)}
-        style={TextInputStyle}
+        onChangeText={value}
+        style={[
+          textStyle,
+          {
+            width: '100%',
+            borderBottomWidth: 1,
+          },
+        ]}
       />
-      
     </View>
   );
-}
+};
+
+export default CustomTextInput;

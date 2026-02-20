@@ -1,5 +1,9 @@
 export default {
-  HOME: "Home",
-  PROFILE: "Profile",
-  LOGIN: "Login"
-} 
+  // Auth
+  LOGIN: 'Login',
+  REGISTER: 'Register',
+
+  // Main
+  HOME: 'Home',
+  PROFILE: 'Profile',
+};

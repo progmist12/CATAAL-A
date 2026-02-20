@@ -1,18 +1,21 @@
+import { Text, TouchableOpacity, View } from 'react-native';
 
-import { Text, TextInput, View } from 'react-native';
-import { TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-export default function CustomButton({ label, mainStyle, route }) {
-  
-  const nav = useNavigation()
-  
+const CustomButton = ({ containerStyle, textStyle, label, onPress }) => {
   return (
-    <TouchableOpacity
-      style={mainStyle}
-      onPress={()=>nav.navigate(route)}
-    >
-      <Text>{label}</Text>
-      
-    </TouchableOpacity>
+    <View style={containerStyle}>
+      <TouchableOpacity onPress={onPress}>
+        <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 10,
+          }}
+        >
+          <Text style={textStyle}>{label}</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
-}
+};
+
+export default CustomButton;

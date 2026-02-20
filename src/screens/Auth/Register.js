@@ -6,13 +6,13 @@ import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
 import { ROUTES } from '../../utils';
 
-const Login = () => {
+const Register = () => {
   const [emailAdd, setEmailAdd] = useState('');
   const [password, setPassword] = useState('');
 
   const navigation = useNavigation();
 
-  const handleLogin = () => {
+  const handleRegister = () => {
     if (emailAdd === '' || password === '') {
       Alert.alert(
         'Invalid Credentials',
@@ -22,7 +22,7 @@ const Login = () => {
     }
 
     
-    Alert.alert('Success', 'Login successful!');
+    Alert.alert('Success', 'Registration successful!');
   };
 
   return (
@@ -79,7 +79,7 @@ const Login = () => {
 
       
       <CustomButton
-        label="SIGN IN"
+        label="SIGN UP"
         containerStyle={{
           backgroundColor: 'skyblue',
           borderRadius: 10,
@@ -90,7 +90,7 @@ const Login = () => {
           color: 'black',
           fontWeight: 'bold',
         }}
-        onPress={handleLogin}
+        onPress={handleRegister}
       />
 
       
@@ -101,10 +101,10 @@ const Login = () => {
           justifyContent: 'center',
         }}
       >
-        <Text>Create an account?</Text>
+        <Text>Have an account already?</Text>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate(ROUTES.REGISTER)}
+          onPress={() => navigation.navigate(ROUTES.LOGIN)}
         >
           <Text
             style={{
@@ -113,7 +113,7 @@ const Login = () => {
               fontWeight: 'bold',
             }}
           >
-            SIGN UP
+            SIGN IN
           </Text>
         </TouchableOpacity>
       </View>
@@ -121,4 +121,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
