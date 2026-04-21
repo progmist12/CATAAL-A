@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import {Alert, Text, TouchableOpacity, View, Image,} from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
 import { ROUTES } from '../../utils';
+
+interface RootStackParamList {
+  [key: string]: any;
+}
 
 const Login = () => {
   const [emailAdd, setEmailAdd] = useState('');
   const [password, setPassword] = useState('');
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const handleLogin = () => {
     if (emailAdd === '' || password === '') {
@@ -52,7 +56,7 @@ const Login = () => {
           label="Email Address"
           placeholder="Enter Email Address"
           value={emailAdd}
-          onChangeText={val => setEmailAdd(val)}
+          onChangeText={(val: string) => setEmailAdd(val)}
           containerStyle={{ padding: 5 }}
           textStyle={{
             borderRadius: 10,
@@ -66,7 +70,7 @@ const Login = () => {
           label="Password"
           placeholder="Enter Password"
           value={password}
-          onChangeText={val => setPassword(val)}
+          onChangeText={(val: string) => setPassword(val)}
           secureTextEntry={true}
           containerStyle={{ padding: 5 }}
           textStyle={{
@@ -104,7 +108,7 @@ const Login = () => {
         <Text>Create an account?</Text>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate(ROUTES.REGISTER)}
+          onPress={() => navigation.navigate(ROUTES.REGISTER as any)}
         >
           <Text
             style={{

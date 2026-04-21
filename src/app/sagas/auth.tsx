@@ -7,8 +7,9 @@ import {
   USER_LOGOUT,
 } from '../action';
 import { UserLogin } from '../api/auth';
+import { AuthAction } from '../../types/reducer.auth.types.ts';
 
-export function* userLoginAsync(action) {
+export function* userLoginAsync(action: AuthAction): Generator<any, void, any> {
   try {
     console.log('USER_LOGIN');
     yield put({ type: USER_LOGIN_REQUEST });

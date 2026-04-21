@@ -1,4 +1,6 @@
-export async function UserLogin({ username, password }) {
+import { LoginDOT,RegisterDOT } from "../../types/api.auth.types.ts";
+
+export async function UserLogin({ username, password }: LoginDOT) {
   const BaseUrl = 'http://127.0.0.1:8000/api';
   const url = `${BaseUrl}/login-auth`;
 
@@ -22,7 +24,7 @@ export async function UserLogin({ username, password }) {
       data = await res.json();
       console.log(data);
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
 
     const token = data?.token || null;
@@ -30,23 +32,24 @@ export async function UserLogin({ username, password }) {
     return { ok: true, status: res.status, token };
   } catch (error) {
     console.log('UserLogin error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       ok: false,
       status: null,
       data: null,
-      error: error?.message || String(error),
+      error: errorMessage,
     };
   }
 }
 
-export async function RegisterUser({
-  email,
-  password,
-  username,
-  first_name,
-  last_name,
-  created_at,
-}) {
+export async function RegisterUser(
+  { email,
+    password,
+    username,
+    first_name,
+    last_name,
+    created_at }: RegisterDOT
+) {
   console.log('[API] Sending data to register: ', {
     email,
     password,
@@ -55,11 +58,9 @@ export async function RegisterUser({
     last_name,
     created_at,
   });
-
   const BaseUrl = 'http://127.0.0.1:8000/api';
   const url = `${BaseUrl}/register`;
   console.log('register api called');
-
   try {
     const res = await fetch(url, {
       method: 'POST',
@@ -72,7 +73,7 @@ export async function RegisterUser({
         password,
         username,
         first_name,
-        last_name,
+        last_name,  
         created_at,
       }),
     });
@@ -81,9 +82,7 @@ export async function RegisterUser({
     try {
       data = await res.json();
       console.log('data register: ', data);
-    } catch (e) {
-      // Error handling for non-json responses
-    }
+    } catch (e) {}
 
     if (res.ok === false) {
       return { status: 'error', data };
@@ -92,9 +91,10 @@ export async function RegisterUser({
     return { status: 'ok', data };
   } catch (error) {
     console.log('RegisterUser error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       status: 'error',
-      error: error.message || String(error),
+      error: errorMessage,
     };
   }
 }
