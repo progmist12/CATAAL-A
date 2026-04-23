@@ -41,7 +41,7 @@ const Login = () => {
     >
       
       <Image
-        source={require('../../../assets/images/falcon.jpg')}
+        // source={require('../../../utils/images.js/Hard.jpg')}
         style={{
           width: 200,
           height: 200,

@@ -1,28 +1,65 @@
 import React, { useState } from 'react';
-import {Alert, Text, TouchableOpacity, View, Image,} from 'react-native';
+import { Alert, Text, TouchableOpacity, View, Image } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
 import { ROUTES } from '../../utils';
+import { RegisterUser } from '../../app/api/auth';
+
+interface RootStackParamList {
+  [key: string]: any;
+}
 
 const Register = () => {
   const [emailAdd, setEmailAdd] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const handleRegister = () => {
-    if (emailAdd === '' || password === '') {
+  const handleRegister = async () => {
+    if (
+      emailAdd.trim() === '' ||
+      password.trim() === '' ||
+      username.trim() === '' ||
+      firstName.trim() === '' ||
+      lastName.trim() === ''
+    ) {
       Alert.alert(
         'Invalid Credentials',
-        'Please enter valid email address and password'
+        'Please fill in all registration fields.'
       );
       return;
     }
 
-    
-    Alert.alert('Success', 'Registration successful!');
+    const payload = {
+      email: emailAdd.trim(),
+      password: password.trim(),
+      username: username.trim(),
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      created_at: new Date().toISOString(),
+    };
+
+    const result = await RegisterUser(payload);
+
+    if (result?.status === 'ok') {
+      Alert.alert('Success', 'Registration successful!', [
+        {
+          text: 'Continue to Login',
+          onPress: () => navigation.navigate(ROUTES.LOGIN),
+        },
+      ]);
+      return;
+    }
+
+    const errorMessage =
+      result?.data?.message || result?.error || 'Registration failed';
+
+    Alert.alert('Registration failed', errorMessage);
   };
 
   return (
@@ -35,9 +72,8 @@ const Register = () => {
         backgroundColor: '#fff',
       }}
     >
-      
       <Image
-        source={require('../../../assets/images/falcon.jpg')}
+        // source={require('../../../utils/images.js/Hard.jpg')}
         style={{
           width: 200,
           height: 200,
@@ -46,13 +82,12 @@ const Register = () => {
         }}
       />
 
-      
       <View style={{ width: '100%' }}>
         <CustomTextInput
           label="Email Address"
           placeholder="Enter Email Address"
           value={emailAdd}
-          onChangeText={val => setEmailAdd(val)}
+          onChangeText={(val: string) => setEmailAdd(val)}
           containerStyle={{ padding: 5 }}
           textStyle={{
             borderRadius: 10,
@@ -63,10 +98,49 @@ const Register = () => {
         />
 
         <CustomTextInput
+          label="Username"
+          placeholder="Enter Username"
+          value={username}
+          onChangeText={(val: string) => setUsername(val)}
+          containerStyle={{ padding: 5 }}
+          textStyle={{
+            borderRadius: 10,
+            color: 'black',
+            marginLeft: 10,
+          }}
+        />
+
+        <CustomTextInput
+          label="First Name"
+          placeholder="Enter First Name"
+          value={firstName}
+          onChangeText={(val: string) => setFirstName(val)}
+          containerStyle={{ padding: 5 }}
+          textStyle={{
+            borderRadius: 10,
+            color: 'black',
+            marginLeft: 10,
+          }}
+        />
+
+        <CustomTextInput
+          label="Last Name"
+          placeholder="Enter Last Name"
+          value={lastName}
+          onChangeText={(val: string) => setLastName(val)}
+          containerStyle={{ padding: 5 }}
+          textStyle={{
+            borderRadius: 10,
+            color: 'black',
+            marginLeft: 10,
+          }}
+        />
+
+        <CustomTextInput
           label="Password"
           placeholder="Enter Password"
           value={password}
-          onChangeText={val => setPassword(val)}
+          onChangeText={(val: string) => setPassword(val)}
           secureTextEntry={true}
           containerStyle={{ padding: 5 }}
           textStyle={{
@@ -77,7 +151,6 @@ const Register = () => {
         />
       </View>
 
-      
       <CustomButton
         label="SIGN UP"
         containerStyle={{
@@ -93,7 +166,6 @@ const Register = () => {
         onPress={handleRegister}
       />
 
-      
       <View
         style={{
           flexDirection: 'row',
@@ -103,9 +175,7 @@ const Register = () => {
       >
         <Text>Have an account already?</Text>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate(ROUTES.LOGIN)}
-        >
+        <TouchableOpacity onPress={() => navigation.navigate(ROUTES.LOGIN)}>
           <Text
             style={{
               color: 'blue',
