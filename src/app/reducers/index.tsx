@@ -3,7 +3,8 @@ import { persistReducer, persistStore } from 'redux-persist';
 import createSagaMiddleware from 'redux-saga';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import auth from './auth'; 
+import auth from './auth';
+import rootSaga from '../sagas'; 
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -29,5 +30,7 @@ export default () => {
   let store = createStore(persistedReducer, applyMiddleware(sagaMiddleware));
   let persistor = persistStore(store);
   
-  return { store, persistor, runSaga: sagaMiddleware.run };
+  sagaMiddleware.run(rootSaga);
+  
+  return { store, persistor };
 };

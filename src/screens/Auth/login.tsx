@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
-import {Alert, Text, TouchableOpacity, View, Image,} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Alert, Text, TouchableOpacity, View, Image, ActivityIndicator } from 'react-native';
+
+// 1. Redux Imports
+import { useDispatch, useSelector } from 'react-redux';
+import { authLogin } from '../../app/action'; // Verified path based on your file tree
 
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomButton from '../../components/CustomButton';
@@ -14,7 +18,27 @@ const Login = () => {
   const [emailAdd, setEmailAdd] = useState('');
   const [password, setPassword] = useState('');
 
+  const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  // 2. Select data from Redux State
+  // We use state.auth because that is the key you used in combineReducers
+  const { isLoading, error, token } = useSelector((state: any) => state.auth);
+
+  // 3. Monitor login status
+  useEffect(() => {
+    if (token) {
+      // Navigate to Home or Main app once token is present
+      // navigation.navigate(ROUTES.HOME); 
+      Alert.alert('Success', 'Login successful!');
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert('Login Failed', error);
+    }
+  }, [error]);
 
   const handleLogin = () => {
     if (emailAdd === '' || password === '') {
@@ -25,8 +49,9 @@ const Login = () => {
       return;
     }
 
-    
-    Alert.alert('Success', 'Login successful!');
+    // 4. Dispatch the action to trigger Redux-Saga
+    // Note: mapping 'emailAdd' UI state to 'username' which the API expects
+    dispatch(authLogin({ username: emailAdd, password: password }));
   };
 
   return (
@@ -39,7 +64,6 @@ const Login = () => {
         backgroundColor: '#fff',
       }}
     >
-      
       <Image
         // source={require('../../../utils/images.js/Hard.jpg')}
         style={{
@@ -47,14 +71,14 @@ const Login = () => {
           height: 200,
           resizeMode: 'contain',
           marginBottom: 30,
+          backgroundColor: '#eee' // Placeholder color until image source is fixed
         }}
       />
 
-      
       <View style={{ width: '100%' }}>
         <CustomTextInput
           label="Email Address"
-          placeholder="Enter Email Address"
+          placeholder="Enter Email Address" // Added to satisfy TS requirement
           value={emailAdd}
           onChangeText={(val: string) => setEmailAdd(val)}
           containerStyle={{ padding: 5 }}
@@ -68,7 +92,7 @@ const Login = () => {
 
         <CustomTextInput
           label="Password"
-          placeholder="Enter Password"
+          placeholder="Enter Password" // Added to satisfy TS requirement
           value={password}
           onChangeText={(val: string) => setPassword(val)}
           secureTextEntry={true}
@@ -81,23 +105,27 @@ const Login = () => {
         />
       </View>
 
-      
-      <CustomButton
-        label="SIGN IN"
-        containerStyle={{
-          backgroundColor: 'skyblue',
-          borderRadius: 10,
-          marginVertical: 20,
-          width: '80%',
-        }}
-        textStyle={{
-          color: 'black',
-          fontWeight: 'bold',
-        }}
-        onPress={handleLogin}
-      />
+      {/* 5. Conditional Rendering for Loader */}
+      {isLoading ? (
+        <ActivityIndicator size="large" color="skyblue" style={{ marginVertical: 20 }} />
+      ) : (
+        <CustomButton
+          label="SIGN IN"
+          containerStyle={{
+            backgroundColor: 'skyblue',
+            borderRadius: 10,
+            marginVertical: 20,
+            width: '80%',
+          }}
+          textStyle={{ // Added to satisfy TS requirement
+            color: 'black',
+            fontWeight: 'bold',
+            textAlign: 'center'
+          }}
+          onPress={handleLogin}
+        />
+      )}
 
-      
       <View
         style={{
           flexDirection: 'row',
