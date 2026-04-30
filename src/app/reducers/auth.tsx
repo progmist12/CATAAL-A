@@ -3,6 +3,7 @@ import {
   USER_LOGIN_SUCCESS,
   USER_LOGIN_FAILURE,
   USER_LOGOUT,
+  CLEAR_AUTH_ERROR,
 } from '../action';
 
 import {
@@ -51,6 +52,15 @@ export default function authReducer(
         error: null,
       };
     }
+
+    case CLEAR_AUTH_ERROR: 
+      return {
+        ...state,
+        isLoading: false,
+        userData: null,
+        token: null,
+        error: null,
+      };
 
     case USER_LOGIN_FAILURE: {
       const errorMessage =

@@ -1,4 +1,4 @@
 export default {
-  LOGO: '../assets/images/Hard.jpg',
+  LOGO: '../assets/prime.png',
 
 };

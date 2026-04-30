@@ -1,156 +1,323 @@
-import React, { useState, useEffect } from 'react';
-import { Alert, Text, TouchableOpacity, View, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Alert, Text, TouchableOpacity, View, Image, ActivityIndicator, 
+  StyleSheet, Animated, Dimensions 
+} from 'react-native';
 
-// 1. Redux Imports
+// Redux & Navigation
 import { useDispatch, useSelector } from 'react-redux';
-import { authLogin } from '../../app/action'; // Verified path based on your file tree
-
+import { authLogin, clearAuthError } from '../../app/action'; 
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+
+// Components & Utils
 import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
 import { ROUTES } from '../../utils';
 
-interface RootStackParamList {
-  [key: string]: any;
-}
+const { width } = Dimensions.get('window');
+
+/**
+ * 1. SEPARATE ANIMATED COMPONENT
+ * Moving hooks into this sub-component prevents the "Rendered more hooks" error.
+ */
+const FloatingShape = ({ type, top, left }: { type: 'play' | 'square', top: any, left: any }) => {
+  const floatAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [floatAnim]);
+
+  const translateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -25],
+  });
+
+  return (
+    <Animated.View style={[
+      styles.shape, 
+      { 
+        top: top,     // Layout properties go here
+        left: left, 
+        transform: [{ translateY: translateY }] // Only the animation goes in transform
+      },
+      type === 'play' ? styles.playShape : styles.squareShape
+    ]} />
+  );
+};
 
 const Login = () => {
   const [emailAdd, setEmailAdd] = useState('');
   const [password, setPassword] = useState('');
-
+  const [errorShown, setErrorShown] = useState(false);
+  
   const dispatch = useDispatch();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<any>>();
 
-  // 2. Select data from Redux State
-  // We use state.auth because that is the key you used in combineReducers
+  // Select data from Redux State
   const { isLoading, error, token } = useSelector((state: any) => state.auth);
 
-  // 3. Monitor login status
+  // Clear error when component mounts
+  useEffect(() => {
+    dispatch(clearAuthError());
+    setErrorShown(false);
+  }, [dispatch]);
+
+  // Monitor login status
   useEffect(() => {
     if (token) {
-      // Navigate to Home or Main app once token is present
-      // navigation.navigate(ROUTES.HOME); 
       Alert.alert('Success', 'Login successful!');
+      // navigation.navigate(ROUTES.HOME); 
     }
   }, [token]);
 
+  // Only show error alert if a new error occurs (not on initial mount)
   useEffect(() => {
-    if (error) {
-      Alert.alert('Login Failed', error);
+    if (error && !errorShown) {
+      Alert.alert(
+        'Login Failed', 
+        error, 
+        [{ 
+          text: 'OK', 
+          onPress: () => {
+            dispatch(clearAuthError());
+            setErrorShown(true); // Mark as shown after clicking OK
+          } 
+        }]
+      );
+      setErrorShown(true); // Immediate update to prevent duplicate alerts
     }
-  }, [error]);
+  }, [error, errorShown, dispatch]);
 
   const handleLogin = () => {
     if (emailAdd === '' || password === '') {
-      Alert.alert(
-        'Invalid Credentials',
-        'Please enter valid email address and password'
-      );
+      Alert.alert('Invalid Credentials', 'Please enter valid email address and password');
       return;
     }
-
-    // 4. Dispatch the action to trigger Redux-Saga
-    // Note: mapping 'emailAdd' UI state to 'username' which the API expects
+    setErrorShown(false);
     dispatch(authLogin({ username: emailAdd, password: password }));
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        padding: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#fff',
-      }}
-    >
+    <View style={styles.container}>
+      {/* Background Animated Shapes */}
+      <FloatingShape type="play" top="15%" left="10%" />
+      <FloatingShape type="square" top="70%" left="15%" />
+      <FloatingShape type="play" top="45%" left="82%" />
+      <FloatingShape type="square" top="12%" left="78%" />
+
+      {/* Logo Section */}
       <Image
-        // source={require('../../../utils/images.js/Hard.jpg')}
-        style={{
-          width: 200,
-          height: 200,
-          resizeMode: 'contain',
-          marginBottom: 30,
-          backgroundColor: '#eee' // Placeholder color until image source is fixed
-        }}
+        source={require('../../assets/prime.png')} 
+        style={styles.logo}
       />
 
-      <View style={{ width: '100%' }}>
-        <CustomTextInput
-          label="Email Address"
-          placeholder="Enter Email Address" // Added to satisfy TS requirement
-          value={emailAdd}
-          onChangeText={(val: string) => setEmailAdd(val)}
-          containerStyle={{ padding: 5 }}
-          textStyle={{
-            borderRadius: 10,
-            color: 'black',
-            marginLeft: 10,
-            fontWeight: 'bold',
-          }}
-        />
+      {/* Auth Card */}
+      <View style={styles.authCard}>
+        <Text style={styles.authTitle}>Sign In</Text>
 
-        <CustomTextInput
-          label="Password"
-          placeholder="Enter Password" // Added to satisfy TS requirement
-          value={password}
-          onChangeText={(val: string) => setPassword(val)}
-          secureTextEntry={true}
-          containerStyle={{ padding: 5 }}
-          textStyle={{
-            borderRadius: 10,
-            color: 'black',
-            marginLeft: 10,
-          }}
-        />
-      </View>
+        <View style={{ width: '100%' }}>
+          <Text style={styles.inputLabel}>Email or Username</Text>
+          <CustomTextInput
+            placeholder="e.g. lance or lance@example.com"
+            value={emailAdd}
+            onChangeText={(val: string) => setEmailAdd(val)}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+            placeholderTextColor="rgba(255,255,255,0.3)"
+          />
 
-      {/* 5. Conditional Rendering for Loader */}
-      {isLoading ? (
-        <ActivityIndicator size="large" color="skyblue" style={{ marginVertical: 20 }} />
-      ) : (
-        <CustomButton
-          label="SIGN IN"
-          containerStyle={{
-            backgroundColor: 'skyblue',
-            borderRadius: 10,
-            marginVertical: 20,
-            width: '80%',
-          }}
-          textStyle={{ // Added to satisfy TS requirement
-            color: 'black',
-            fontWeight: 'bold',
-            textAlign: 'center'
-          }}
-          onPress={handleLogin}
-        />
-      )}
+          <Text style={styles.inputLabel}>Password</Text>
+          <CustomTextInput
+            placeholder="Enter password"
+            value={password}
+            onChangeText={(val: string) => setPassword(val)}
+            secureTextEntry={true}
+            containerStyle={styles.inputContainer}
+            textStyle={styles.inputText}
+            placeholderTextColor="rgba(255,255,255,0.3)"
+          />
+        </View>
 
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Text>Create an account?</Text>
+        <View style={styles.helpRow}>
+          <Text style={styles.helpText}>Need help?</Text>
+        </View>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate(ROUTES.REGISTER as any)}
-        >
-          <Text
-            style={{
-              color: 'blue',
-              marginLeft: 10,
-              fontWeight: 'bold',
-            }}
-          >
-            SIGN UP
-          </Text>
-        </TouchableOpacity>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#00ff88" style={{ marginVertical: 20 }} />
+        ) : (
+          <CustomButton
+            label="LOG IN"
+            containerStyle={styles.submitBtn}
+            textStyle={styles.submitBtnText}
+            onPress={handleLogin}
+          />
+        )}
+
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          {/* <Text style={styles.dividerText}>OR SECURE LOG WITH</Text> */}
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* <TouchableOpacity style={styles.googleBtn}>
+          <Text style={styles.googleBtnText}>Continue with Google</Text>
+        </TouchableOpacity> */}
+
+        <View style={styles.footer}>
+          <Text style={{ color: 'rgba(255,255,255,0.5)' }}>New to PrimeStage? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate(ROUTES.REGISTER as any)}>
+            <Text style={styles.signUpText}>Get started now</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 };
+
+// --- STYLES ---
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  shape: {
+    position: 'absolute',
+    opacity: 0.15,
+  },
+  playShape: {
+    width: 0,
+    height: 0,
+    borderTopWidth: 15,
+    borderBottomWidth: 15,
+    borderLeftWidth: 25,
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: '#2ecc71',
+  },
+  squareShape: {
+    width: 30,
+    height: 30,
+    borderWidth: 3,
+    borderColor: '#2ecc71',
+    borderRadius: 6,
+  },
+  logo: {
+    width: 180,
+    height: 60,
+    resizeMode: 'contain',
+    marginBottom: 40,
+  },
+  authCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: 'rgba(20, 20, 20, 0.95)',
+    borderRadius: 20,
+    padding: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  authTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 20,
+  },
+  inputLabel: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  inputContainer: {
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
+  inputText: {
+    color: '#fff',
+    height: 45,
+    borderBottomWidth: 0, // Remove the line from your custom component
+  },
+  helpRow: {
+    alignItems: 'flex-end',
+    marginBottom: 20,
+  },
+  helpText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
+  },
+  submitBtn: {
+    backgroundColor: '#00ff88',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  submitBtnText: {
+    color: '#000',
+    fontWeight: '800',
+    fontSize: 16,
+    letterSpacing: 1,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  dividerText: {
+    color: 'rgba(255,255,255,0.2)',
+    marginHorizontal: 10,
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
+  // googleBtn: {
+  //   borderWidth: 1,
+  //   borderColor: 'rgba(255,255,255,0.15)',
+  //   borderRadius: 12,
+  //   paddingVertical: 12,
+  //   alignItems: 'center',
+  // },
+  // googleBtnText: {
+  //   color: '#fff',
+  //   fontWeight: '600',
+  // },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 25,
+  },
+  signUpText: {
+    color: '#2ecc71',
+    fontWeight: 'bold',
+  },
+});
 
 export default Login;

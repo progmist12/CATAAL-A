@@ -1,20 +1,35 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 
-const CustomButton = ({ containerStyle, textStyle, label, onPress }) => {
+// Define an interface for the props to resolve the "implicitly has any type" errors
+interface CustomButtonProps {
+  label: string;
+  onPress: () => void;
+  containerStyle?: ViewStyle | ViewStyle[];
+  textStyle?: TextStyle | TextStyle[];
+}
+
+const CustomButton = ({ 
+  containerStyle, 
+  textStyle, 
+  label, 
+  onPress 
+}: CustomButtonProps) => {
   return (
-    <View style={containerStyle}>
-      <TouchableOpacity onPress={onPress}>
-        <View
-          style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 10,
-          }}
-        >
-          <Text style={textStyle}>{label}</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity 
+      onPress={onPress} 
+      style={[
+        {
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 10,
+        },
+        containerStyle 
+      ]}
+      activeOpacity={0.7}
+    >
+      <Text style={textStyle}>{label}</Text>
+    </TouchableOpacity>
   );
 };
 

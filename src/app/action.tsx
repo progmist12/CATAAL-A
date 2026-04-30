@@ -4,6 +4,8 @@ export const USER_LOGIN_SUCCESS = 'USER_LOGIN_SUCCESS';
 export const USER_LOGIN_FAILURE = 'USER_LOGIN_FAILURE';
 export const USER_LOGOUT = 'USER_LOGOUT'; 
 
+export const CLEAR_AUTH_ERROR = 'CLEAR_AUTH_ERROR';
+
 export const authLogin = (payload: any) => ({
   type: USER_LOGIN,
   payload,
@@ -26,4 +28,9 @@ export const authLoginFailure = (error: string, payload: any = null) => ({
 
 export const authLogout = () => ({
   type: USER_LOGOUT,
+});
+
+
+export const clearAuthError = () => ({
+  type: CLEAR_AUTH_ERROR,
 });
