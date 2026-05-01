@@ -4,6 +4,9 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import AppNav from './src/navigations'
 import createStore from './src/app/reducers'
+import Toast from 'react-native-toast-message';
+import toastConfig from './src/components/alert_message/config';
+
 
 const { store, persistor } = createStore();
 
@@ -13,6 +16,7 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
         <SafeAreaProvider style={styles.container}>
           <AppNav />
+          <Toast config={toastConfig} />
         </SafeAreaProvider>
       </PersistGate>
     </Provider>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Alert, Text, TouchableOpacity, View, Image, ActivityIndicator, 
+  Text, TouchableOpacity, View, Image, ActivityIndicator, 
   StyleSheet, Animated, Dimensions 
 } from 'react-native';
 
@@ -12,6 +12,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 // Components & Utils
 import CustomButton from '../../components/CustomButton';
 import CustomTextInput from '../../components/CustomTextInput';
+import { showError, showSuccess } from '../../components/alert_message';
 import { ROUTES } from '../../utils';
 
 const { width } = Dimensions.get('window');
@@ -80,32 +81,41 @@ const Login = () => {
   // Monitor login status
   useEffect(() => {
     if (token) {
-      Alert.alert('Success', 'Login successful!');
+      showSuccess({
+        title: 'Success',
+        message: 'Login successful!',
+        type: 'success',
+        position: 'top',
+        visibilityTime: 3000,
+      });
       // navigation.navigate(ROUTES.HOME); 
     }
   }, [token]);
 
-  // Only show error alert if a new error occurs (not on initial mount)
+  // Only show error toast if a new error occurs (not on initial mount)
   useEffect(() => {
     if (error && !errorShown) {
-      Alert.alert(
-        'Login Failed', 
-        error, 
-        [{ 
-          text: 'OK', 
-          onPress: () => {
-            dispatch(clearAuthError());
-            setErrorShown(true); // Mark as shown after clicking OK
-          } 
-        }]
-      );
+      showError({
+        title: 'Login Failed',
+        message: error,
+        type: 'error',
+        position: 'top',
+        visibilityTime: 4000,
+      });
+      dispatch(clearAuthError());
       setErrorShown(true); // Immediate update to prevent duplicate alerts
     }
   }, [error, errorShown, dispatch]);
 
   const handleLogin = () => {
     if (emailAdd === '' || password === '') {
-      Alert.alert('Invalid Credentials', 'Please enter valid email address and password');
+      showError({
+        title: 'Invalid Credentials',
+        message: 'Please enter valid email address and password',
+        type: 'error',
+        position: 'top',
+        visibilityTime: 3000,
+      });
       return;
     }
     setErrorShown(false);
