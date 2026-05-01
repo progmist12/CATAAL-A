@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1022919636540",
+    "project_id": "primestage-f46b2",
+    "storage_bucket": "primestage-f46b2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022919636540:android:d186c5867542fb82e47539",
+        "android_client_info": {
+          "package_name": "com.cataal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1022919636540-8co2ggmocheanv6dehpi1ofn9h7korec.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cataal",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "1022919636540-cr0alnnerh3qk5vrfdmsf4asrcl05hv2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChE2B93h9LX_UZkXDIrU_99dqRffQtt5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1022919636540-cr0alnnerh3qk5vrfdmsf4asrcl05hv2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
