@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Text, TouchableOpacity, View, Image, ActivityIndicator, 
-  StyleSheet, Animated, Dimensions 
+  StyleSheet, Animated, Dimensions, StatusBar
 } from 'react-native';
 
 // Redux & Navigation
@@ -15,11 +15,14 @@ import CustomTextInput from '../../components/CustomTextInput';
 import { showError, showSuccess } from '../../components/alert_message';
 import { ROUTES } from '../../utils';
 
+// Google & Firebase Service
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import { _signInwithGoogle } from '../../utils/firebase';
+
 const { width } = Dimensions.get('window');
 
 /**
- * 1. SEPARATE ANIMATED COMPONENT
- * Moving hooks into this sub-component prevents the "Rendered more hooks" error.
+ * 1. ANIMATED BACKGROUND SHAPES
  */
 const FloatingShape = ({ type, top, left }: { type: 'play' | 'square', top: any, left: any }) => {
   const floatAnim = useRef(new Animated.Value(0)).current;
@@ -52,19 +55,22 @@ const FloatingShape = ({ type, top, left }: { type: 'play' | 'square', top: any,
     <Animated.View style={[
       styles.shape, 
       { 
-        top: top,     // Layout properties go here
+        top: top, 
         left: left, 
-        transform: [{ translateY: translateY }] // Only the animation goes in transform
+        transform: [{ translateY: translateY }] 
       },
       type === 'play' ? styles.playShape : styles.squareShape
     ]} />
   );
 };
 
+/**
+ * 2. MAIN LOGIN COMPONENT
+ */
 const Login = () => {
   const [emailAdd, setEmailAdd] = useState('');
   const [password, setPassword] = useState('');
-  const [errorShown, setErrorShown] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp<any>>();
@@ -72,71 +78,89 @@ const Login = () => {
   // Select data from Redux State
   const { isLoading, error, token } = useSelector((state: any) => state.auth);
 
-  // Clear error when component mounts
+  // Clear errors on mount
   useEffect(() => {
     dispatch(clearAuthError());
-    setErrorShown(false);
   }, [dispatch]);
 
-  // Monitor login status
+  // Handle successful login
   useEffect(() => {
     if (token) {
       showSuccess({
         title: 'Success',
         message: 'Login successful!',
-        type: 'success',
-        position: 'top',
-        visibilityTime: 3000,
       });
-      // navigation.navigate(ROUTES.HOME); 
     }
   }, [token]);
 
-  // Only show error toast if a new error occurs (not on initial mount)
+  // Handle standard login errors
   useEffect(() => {
-    if (error && !errorShown) {
+    if (error) {
       showError({
         title: 'Login Failed',
         message: error,
-        type: 'error',
-        position: 'top',
-        visibilityTime: 4000,
       });
       dispatch(clearAuthError());
-      setErrorShown(true); // Immediate update to prevent duplicate alerts
     }
-  }, [error, errorShown, dispatch]);
+  }, [error, dispatch]);
 
   const handleLogin = () => {
     if (emailAdd === '' || password === '') {
       showError({
         title: 'Invalid Credentials',
         message: 'Please enter valid email address and password',
-        type: 'error',
-        position: 'top',
-        visibilityTime: 3000,
       });
       return;
     }
-    setErrorShown(false);
     dispatch(authLogin({ username: emailAdd, password: password }));
+  };
+
+  /**
+   * GOOGLE SIGN-IN HANDLER
+   */
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const result = await _signInwithGoogle();
+
+      if (result && result.userInfo) {
+        const userEmail = (result.userInfo as any).user?.email;
+        showSuccess({
+          title: 'Welcome!',
+          message: `Signed in as ${userEmail || 'Google User'}`,
+        });
+        // dispatch(authGoogleSuccess(result.userInfo));
+      } else if (result && result.message) {
+        showError({
+          title: 'Google Sign-In',
+          message: result.message,
+        });
+      }
+    } catch (err) {
+      showError({
+        title: 'Connection Error',
+        message: 'Failed to connect to Google services.',
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Background Animated Shapes */}
+      <StatusBar barStyle="light-content" />
+      
+      {/* Background Decorations */}
       <FloatingShape type="play" top="15%" left="10%" />
       <FloatingShape type="square" top="70%" left="15%" />
       <FloatingShape type="play" top="45%" left="82%" />
       <FloatingShape type="square" top="12%" left="78%" />
 
-      {/* Logo Section */}
       <Image
         source={require('../../assets/prime.png')} 
         style={styles.logo}
       />
 
-      {/* Auth Card */}
       <View style={styles.authCard}>
         <Text style={styles.authTitle}>Sign In</Text>
 
@@ -163,9 +187,9 @@ const Login = () => {
           />
         </View>
 
-        <View style={styles.helpRow}>
+        <TouchableOpacity style={styles.helpRow}>
           <Text style={styles.helpText}>Need help?</Text>
-        </View>
+        </TouchableOpacity>
 
         {isLoading ? (
           <ActivityIndicator size="large" color="#00ff88" style={{ marginVertical: 20 }} />
@@ -180,13 +204,22 @@ const Login = () => {
 
         <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
-          {/* <Text style={styles.dividerText}>OR SECURE LOG WITH</Text> */}
+          <Text style={styles.dividerText}>OR SECURE LOG WITH</Text>
           <View style={styles.dividerLine} />
         </View>
 
-        {/* <TouchableOpacity style={styles.googleBtn}>
-          <Text style={styles.googleBtnText}>Continue with Google</Text>
-        </TouchableOpacity> */}
+        {isGoogleLoading ? (
+          <ActivityIndicator size="small" color="#00ff88" style={{ marginVertical: 10 }} />
+        ) : (
+          <View style={{ alignItems: 'center' }}>
+            <GoogleSigninButton
+              style={{ width: '100%', height: 48 }}
+              size={GoogleSigninButton.Size.Wide}
+              color={GoogleSigninButton.Color.Dark}
+              onPress={handleGoogleLogin}
+            />
+          </View>
+        )}
 
         <View style={styles.footer}>
           <Text style={{ color: 'rgba(255,255,255,0.5)' }}>New to PrimeStage? </Text>
@@ -199,7 +232,6 @@ const Login = () => {
   );
 };
 
-// --- STYLES ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -269,7 +301,6 @@ const styles = StyleSheet.create({
   inputText: {
     color: '#fff',
     height: 45,
-    borderBottomWidth: 0, // Remove the line from your custom component
   },
   helpRow: {
     alignItems: 'flex-end',
@@ -308,17 +339,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 'bold',
   },
-  // googleBtn: {
-  //   borderWidth: 1,
-  //   borderColor: 'rgba(255,255,255,0.15)',
-  //   borderRadius: 12,
-  //   paddingVertical: 12,
-  //   alignItems: 'center',
-  // },
-  // googleBtnText: {
-  //   color: '#fff',
-  //   fontWeight: '600',
-  // },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
